@@ -1,10 +1,17 @@
+import 'package:cliniflow/UserModel.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 
 class doctorPage extends StatefulWidget {
+  final UserDetails userDetails;
+  doctorPage({
+    required this.userDetails,
+    Key? key,
+  }) : super(key: key);
   @override
   _doctorPageState createState() => _doctorPageState();
+  
 }
 
 class _doctorPageState extends State<doctorPage> {
@@ -15,6 +22,20 @@ class _doctorPageState extends State<doctorPage> {
   TextEditingController prescriptionController = TextEditingController();
   TextEditingController notesController = TextEditingController();
   bool isListening = false;
+
+  int calculateAgeFromTimestamp(int timestamp) {
+  DateTime currentDate = DateTime.now();
+  DateTime birthDate = DateTime.fromMillisecondsSinceEpoch(timestamp);
+
+  int age = currentDate.year - birthDate.year;
+
+  if (currentDate.month < birthDate.month ||
+      (currentDate.month == birthDate.month && currentDate.day < birthDate.day)) {
+    age--;
+  }
+
+  return age;
+}
 
   void startListening(TextEditingController controller) async {
     if (!isListening) {
@@ -100,9 +121,9 @@ class _doctorPageState extends State<doctorPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildInputField("Name:", "John Doe"),
-                  _buildInputField("Age:", "30"),
-                  _buildInputField("Gender:", "Male"),
+                  _buildInputField("Name:", widget.userDetails.name),
+                  _buildInputField("Age:", calculateAgeFromTimestamp(widget.userDetails.dobMillis).toString()),
+                  _buildInputField("Gender:", widget.userDetails.gender),
                   _buildInputArea(
                     "Disease:",
                     diseaseController,

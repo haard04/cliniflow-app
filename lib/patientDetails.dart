@@ -2,10 +2,17 @@ import 'package:cliniflow/Doctorpage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'UserModel.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
+
 
 class patientDetails extends StatelessWidget {
+  final TextEditingController aadharController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController dobController = TextEditingController();
-  
+  String selectedGender = 'Male'; // Default value
+  final TextEditingController contactController = TextEditingController();
+  int dobMillis = 0;
+   int appointmentCounter = 1;
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -13,21 +20,11 @@ class patientDetails extends StatelessWidget {
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
-    Map<String, dynamic> toMap(newPatient) {
-    return {
-      'aadharNumber': newPatient.aadharNumber,
-      'name': newPatient.name,
-      'dobMillis': newPatient.dobMillis,
-      'gender': newPatient.gender,
-      'contactNumber': newPatient.contactNumber,
-      'appointments': Appointment(appointmentId: 2, completed: false),
-      
-    };
-    }
-    
+
     if (picked != null) {
       dobController.text =
           "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
+          dobMillis = picked.millisecondsSinceEpoch;
     }
   }
 
@@ -41,12 +38,13 @@ class patientDetails extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(
-              decoration: InputDecoration(labelText: 'Aadhar Number',),
+              controller: aadharController,
+              decoration: InputDecoration(labelText: 'Aadhar Number'),
               keyboardType: TextInputType.number,
               maxLength: 12,
-              
             ),
             TextField(
+              controller: nameController,
               decoration: InputDecoration(labelText: 'Name'),
             ),
             GestureDetector(
@@ -62,9 +60,9 @@ class patientDetails extends StatelessWidget {
               ),
             ),
             DropdownButtonFormField<String>(
-              value: 'Male', // Default value
+              value: selectedGender,
               onChanged: (newValue) {
-                // Handle dropdown value change
+                selectedGender = newValue!;
               },
               items: ['Male', 'Female', 'Other']
                   .map<DropdownMenuItem<String>>(
@@ -77,33 +75,40 @@ class patientDetails extends StatelessWidget {
               decoration: InputDecoration(labelText: 'Gender'),
             ),
             TextField(
+              controller: contactController,
               decoration: InputDecoration(labelText: 'Contact Number'),
               keyboardType: TextInputType.phone,
               maxLength: 10,
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: ()async {
+              onPressed: () async {
                 // Handle submit button click
                 UserDetails newPatient = UserDetails(
-                aadharNumber: "123456789123"/* Get the Aadhar Number from TextField */,
-                name: "Kashish"/* Get the Name from TextField */,
-                dobMillis: 0/* Convert and store DOB in milliseconds */,
-                gender:"male" /* Get the selected gender from DropdownButtonFormField */,
-                contactNumber:"9876543210" /* Get the Contact Number from TextField */,
-                appointments: [
-                Appointment(appointmentId: 2, completed: false)
-                
-      ],
-    );
+                  aadharNumber: aadharController.text,
+                  name: nameController.text,
+                  dobMillis: dobMillis, // You need to convert this to milliseconds as required
+                  gender: selectedGender,
+                  contactNumber: contactController.text,
+                  appointments: [
+                    Appointment(appointmentId: appointmentCounter, completed: false),
+                  ],
+                );
 
-    
-
-    // await FirebaseFirestore.instance.collection('patients').add(newPatient.toMap(newPatient));
-    print("SUCCESS");
+                CollectionReference patientCollection = FirebaseFirestore.instance.collection('patients');
+                await patientCollection.add(newPatient.toMap());
+                appointmentCounter++;
+                print("SUCCESS");
+                AwesomeDialog(
+                  context: context,
+                  animType: AnimType.SCALE,
+                  dialogType: DialogType.success,
+                  title: 'Appointment Booked Successfully',
+                  desc:   'Your Appointment Number is ${appointmentCounter-1}',
+                  btnOkOnPress: () {},
+                ).show();
               },
               child: Text('Submit'),
-              
             ),
           ],
         ),
