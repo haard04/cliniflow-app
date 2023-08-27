@@ -1,4 +1,6 @@
 import 'package:cliniflow/UserModel.dart';
+import 'package:cliniflow/pdf_api.dart';
+import 'package:cliniflow/pdf_confirmation.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -141,7 +143,12 @@ class _doctorPageState extends State<doctorPage> {
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: ()async {
+                
+                    final pdfFile = await Pdfprescription.generateFile(widget.userDetails,'Fever','Take Dolo-650 Twice a day','Take Proper Rest and Drink Lemon Water Thrice a day');
+
+                    PdfApi.openFile(pdfFile);
+                    },
                     style: ElevatedButton.styleFrom(
                       primary: Colors.green,
                       padding: EdgeInsets.symmetric(vertical: 10),
