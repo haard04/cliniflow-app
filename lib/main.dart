@@ -1,3 +1,4 @@
+import 'package:cliniflow/landingPage.dart';
 import 'package:cliniflow/nav.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -14,7 +15,7 @@ class MedicalRecordApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: nav(),
+      home: SplashScreen(),
     );
   }
 }
